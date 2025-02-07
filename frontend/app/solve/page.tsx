@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, RefreshCw, Check, X } from "lucide-react";
+import Image from "next/image";
 import SudokuBoard from "@/components/sudoku-board";
 import ImageUpload from "@/components/image-upload";
 
@@ -40,7 +41,7 @@ export default function SolvePage() {
 
     try {
       // Assume endpoint /api/solve for solving the Sudoku
-      const response = await fetch("/api/solve", {
+      const response = await fetch("http://localhost:8000/api/solve", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,11 +77,12 @@ export default function SolvePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 {image && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Uploaded Image</h3>
-                    <img
+                    <Image
                       src={image}
                       alt="Uploaded Sudoku"
                       className="w-full rounded-lg"
+                      width={500}
+                      height={500}
                     />
                   </div>
                 )}

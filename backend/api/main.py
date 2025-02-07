@@ -1,6 +1,8 @@
 import random
+from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from .routers import workouts, routines  
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -28,6 +30,35 @@ def frontend_message():
     return {"message": "Hello from the backend!"}
 
 
+class SudokuRequest(BaseModel):
+    puzzle: List[List[int]]
+
+def is_valid(board, row, col, num):
+    """Check if placing num at (row, col) is valid in Sudoku."""
+    for i in range(9):
+        if board[row][i] == num or board[i][col] == num:
+            return False
+    start_row, start_col = (row // 3) * 3, (col // 3) * 3
+    for i in range(3):
+        for j in range(3):
+            if board[start_row + i][start_col + j] == num:
+                return False
+    return True
+
+def solve_sudoku(board):
+    """Solve the Sudoku using backtracking."""
+    for row in range(9):
+        for col in range(9):
+            if board[row][col] == 0:  # Find an empty spot
+                for num in range(1, 10):
+                    if is_valid(board, row, col, num):
+                        board[row][col] = num
+                        if solve_sudoku(board):  # Recur to solve further
+                            return True
+                        board[row][col] = 0  # Undo move if it doesn't work
+                return False  # No valid number found
+    return True  # Puzzle solved
+
 @app.post("/api/recognize")
 async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
     if not image:
@@ -47,6 +78,21 @@ async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/api/solve")
+async def solve_sudoku_api(request: SudokuRequest):
+    puzzle = request.puzzle
+
+    # if len(puzzle) != 9 or any(len(row) != 9 for row in puzzle):
+    #     raise HTTPException(status_code=400, detail="Invalid Sudoku grid size")
+
+    # if solve_sudoku(puzzle):
+    #     return {"solution": puzzle}
+    sudoku_grid = [[random.choice([1, random.randint(1, 9)]) for _ in range(9)] for _ in range(9)]
+    if (1):
+        return {"solution": sudoku_grid}
+    else:
+        raise HTTPException(status_code=400, detail="No solution exists")
 
 app.include_router(workouts.router)
 app.include_router(routines.router)
