@@ -47,3 +47,5 @@ next-env.d.ts
 
 trocr_model/
 .ipynb_checkpoints/
+
+.bolt
