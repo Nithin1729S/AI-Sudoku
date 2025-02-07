@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Upload, RefreshCw, Check, X } from "lucide-react";
 import SudokuBoard from "@/components/sudoku-board";
 import ImageUpload from "@/components/image-upload";
-import Image from "next/image";
 
 export default function SolvePage() {
   const [step, setStep] = useState<"upload" | "verify" | "solution">("upload");
@@ -20,7 +19,7 @@ export default function SolvePage() {
 
     try {
       // Assume endpoint /api/recognize for digit recognition
-      const response = await fetch("/api/recognize", {
+      const response = await fetch("http://localhost:8000/api/recognize", {
         method: "POST",
         body: formData,
       });
@@ -77,11 +76,10 @@ export default function SolvePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 {image && (
                   <div>
-                    <Image
+                    <h3 className="text-lg font-semibold mb-2">Uploaded Image</h3>
+                    <img
                       src={image}
                       alt="Uploaded Sudoku"
-                      width={500}
-                      height={500}
                       className="w-full rounded-lg"
                     />
                   </div>
