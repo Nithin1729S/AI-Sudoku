@@ -66,7 +66,7 @@ export default function SolvePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8 mt-32">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-slate-900">
             {step === "upload" && "Upload Your Sudoku"}
@@ -75,7 +75,7 @@ export default function SolvePage() {
           </h1>
         </div>
 
-        <Card className="p-6">
+        <Card className="p-6 ">
           {step === "upload" && (
             <div className="relative">
               <ImageUpload onUpload={handleImageUpload} />
@@ -96,9 +96,11 @@ export default function SolvePage() {
                 {image && (
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Uploaded Image</h3>
-                    <img
-                      src={image}
+                    <Image
+                      src={image || ''}
                       alt="Uploaded Sudoku"
+                      width={500}
+                      height={500}
                       className="w-full rounded-lg"
                     />
                   </div>
