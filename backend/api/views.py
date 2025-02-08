@@ -1,6 +1,6 @@
 import os
 from transformers import pipeline
-from transformers import VisionEncoderDecoderModel, ViTFeatureExtractor, AutoTokenizer
+from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,13 +9,13 @@ from PIL import Image
 
 save_directory = "./model"
 model = VisionEncoderDecoderModel.from_pretrained(save_directory)
-feature_extractor = ViTFeatureExtractor.from_pretrained(save_directory)
+image_processor = ViTImageProcessor.from_pretrained(save_directory)
 tokenizer = AutoTokenizer.from_pretrained(save_directory)
 
 pipe = pipeline(
     "image-to-text",
     model=model,
-    feature_extractor=feature_extractor,
+    feature_extractor=image_processor,
     tokenizer=tokenizer,
     framework="pt"
 )
