@@ -1,9 +1,7 @@
-from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from pydantic import BaseModel
-from api.views import extract_sudoku_grid
+from api.views import SudokuRequest, extract_sudoku_grid, solve_sudoku
 import cv2 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
@@ -21,63 +19,6 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "OK"}
-
-class SudokuRequest(BaseModel):
-    puzzle: List[List[int]]
-
-
-##############################################
-# Backtracking Sudoku Solver Functions
-##############################################
-def find_empty(board: List[List[int]]):
-    """
-    Find an empty cell (denoted by 0) in the board.
-    Returns a tuple (row, col) or None if no empty cell is found.
-    """
-    for i in range(9):
-        for j in range(9):
-            if board[i][j] == 0:
-                return (i, j)
-    return None
-
-def is_valid(board: List[List[int]], row: int, col: int, num: int) -> bool:
-    """
-    Check if placing 'num' in board[row][col] is valid according to Sudoku rules.
-    """
-    # Check row and column
-    if any(board[row][x] == num for x in range(9)):
-        return False
-    if any(board[y][col] == num for y in range(9)):
-        return False
-
-    # Check the 3x3 sub-grid
-    start_row, start_col = 3 * (row // 3), 3 * (col // 3)
-    for i in range(start_row, start_row + 3):
-        for j in range(start_col, start_col + 3):
-            if board[i][j] == num:
-                return False
-    return True
-
-def solve_sudoku(board: List[List[int]]) -> bool:
-    """
-    Solves the Sudoku board in-place using backtracking.
-    Returns True if a solution exists, False otherwise.
-    """
-    empty = find_empty(board)
-    if not empty:
-        # No empty cell left; solution found
-        return True
-    row, col = empty
-
-    for num in range(1, 10):
-        if is_valid(board, row, col, num):
-            board[row][col] = num
-            if solve_sudoku(board):
-                return True
-            board[row][col] = 0  # Backtrack
-
-    return False
-
 
 
 @app.post("/api/recognize")
