@@ -50,3 +50,4 @@ trocr_model/
 
 .bolt
 model/
+*.png

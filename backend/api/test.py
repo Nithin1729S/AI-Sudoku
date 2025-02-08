@@ -110,7 +110,7 @@ def extract_sudoku_grid(img: np.ndarray) -> list:
             cell = warped[int(p1[1]):int(p2[1]), int(p1[0]):int(p2[0])]
 
             # Crop cell borders (15% margin)
-            margin = int(cell.shape[0] * 0.15)
+            margin = int(cell.shape[0] * 0.1)
             if cell.shape[0] - 2 * margin > 0 and cell.shape[1] - 2 * margin > 0:
                 cell = cell[margin:-margin, margin:-margin]
 
@@ -125,10 +125,7 @@ def extract_sudoku_grid(img: np.ndarray) -> list:
 
             # Use the OCR pipeline to recognize text from the cell image
             result = pipe(cell_path)
-            # Get the recognized text from the OCR pipeline
             recognized_text = result[0]['generated_text'].strip()
-
-            # Define your misclassification mapping
             misclassification_map = {
                 # Common misclassifications due to shape similarity
                 'g': '9', 'q': '9', 'b': '6', 'o': '0', 'O': '0', 'D': '0',
@@ -145,20 +142,24 @@ def extract_sudoku_grid(img: np.ndarray) -> list:
                 '17': '7', '18': '8', '19': '9', '21': '2', '22': '2', '23': '3',
                 '31': '3', '41': '4', '51': '5', '61': '6', '71': '7', '81': '8',
                 '91': '9', '2 2': '2', '3 3': '3', '4 4': '4', '5 5': '5',
-                '6 6': '6', '7 7': '7', '8 8': '8', '9 9': '9'
-            }
+                '6 6': '6', '7 7': '7', '8 8': '8', '9 9': '9',
 
-            # Correct the recognized text using the mapping
+                # Misclassifications involving decimal points
+                '6.': '6', '7.': '7', '1.': '1', '9.': '9', '0.': '0',
+                '.6': '6', '.7': '7', '.1': '1', '.9': '9', '.0': '0',
+            }
+            # If the recognized text is a single digit, store it; otherwise store 0
             corrected_text = misclassification_map.get(recognized_text, recognized_text)
 
-            # Use a regex that optionally allows a trailing period, and then use the corrected text for conversion
-            match = re.match(r'^(\d)\.?$', corrected_text)
+            # Use a capturing group to get the digit part
+            match = re.match(r'^(\d)$', corrected_text)
             if match:
-                # Extract the digit from the match and convert it to int
+                # Extract the digit from the match and convert to int
                 sudoku_grid[row_idx][col_idx] = int(match.group(1))
             else:
                 sudoku_grid[row_idx][col_idx] = 0
 
+            
 
             # Clean up the temporary file
             if os.path.exists(cell_path):

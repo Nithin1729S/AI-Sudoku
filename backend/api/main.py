@@ -36,6 +36,8 @@ async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
 
         # Call the sudoku extraction function
         sudoku_grid = extract_sudoku_grid(img)
+        for row in sudoku_grid:
+                print(row)
         return JSONResponse(content={"numbers": sudoku_grid})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
