@@ -24,73 +24,116 @@ This application offers a seamless, AI-driven solution for solving Sudoku puzzle
 
 # Model Training and Architecture: TrOCR-based Replica on EMNIST
 
-This document details the design, pre-training, fine-tuning, and evaluation of our transformer-based OCR model—an adaptation of [TrOCR: Transformer-based Optical Character Recognition](https://ar5iv.org/abs/2109.10282)—using the EMNIST dataset for handwritten digit recognition.
+This section details the design, pre-training, fine-tuning, and evaluation of our transformer-based OCR model—an adaptation of [TrOCR: Transformer-based Optical Character Recognition](https://ar5iv.org/abs/2109.10282)—using the EMNIST dataset for single-digit handwritten recognition.
 
-> **Note:** While the original TrOCR paper employs a two-stage pre-training on hundreds of millions of printed and handwritten textline images, our replication leverages the EMNIST dataset. We adapt the same principles (encoder-decoder initialization, task formulation, data augmentation, etc.) to recognize handwritten digits (0–9).
+> **Note:** While the original TrOCR paper employs a two-stage pre-training on massive datasets for full text recognition, our replication focuses solely on recognizing isolated single digits as required by the Sudoku application. We adapt the core principles (encoder-decoder initialization, task formulation, and data augmentation) accordingly.
 
-
-## 1. Overview
-
+### 1. Overview
 
 Our OCR system uses an **encoder-decoder architecture** where:
 - The **encoder** is based on a Vision Transformer (ViT) pre-trained using methods inspired by **DeiT/BEiT**.
-- The **decoder** is adapted from pre-trained language models (e.g., RoBERTa or MiniLM) and simplified to output a single digit token.
+- The **decoder** is adapted from the pre-trained RoBERTa model and streamlined to output a single digit token.
 - The model is trained end-to-end on the EMNIST dataset, which contains isolated handwritten digits.
 
----
+### 2. Dataset
 
-## 2. Dataset
-
-### EMNIST Details
+#### EMNIST Details
 - **Dataset:** Extended MNIST (EMNIST) Digits
 - **Content:** Handwritten digits (0–9)
-- **Splits:**  
-  - Training set: ~280,000 images  
-  - Test set: ~40,000 images
+- **Splits:**
+  - **Training set:** ~280,000 images
+  - **Test set:** ~40,000 images
 
 #### Preprocessing Steps:
 - **Resizing:** Images are resized to **32×32 pixels** (or adjusted to match the ViT patch size).
 - **Normalization:** Pixel intensities are scaled to the range **[0, 1]**.
-- **Binarization (optional):** Enhance contrast for improved digit delineation.
+- **Binarization (optional):** Enhances contrast for improved digit delineation.
+- **Augmentation:**
+  - Random rotations (e.g., ±10°)
+  - Gaussian blurring
+  - Affine transformations (dilation/erosion)
+  - Slight scaling adjustments
+---
+
+
+
+## Model Training and Architecture: TrOCR-based Replica on EMNIST
+
+This section details the design, pre-training, fine-tuning, and evaluation of our transformer-based OCR model—an adaptation of [TrOCR: Transformer-based Optical Character Recognition](https://ar5iv.org/abs/2109.10282)—using the EMNIST dataset for single-digit handwritten recognition.
+
+> **Note:** While the original TrOCR paper employs a two-stage pre-training on massive datasets for full text recognition, our replication focuses solely on recognizing isolated single digits as required by the Sudoku application. We adapt the core principles (encoder-decoder initialization, task formulation, and data augmentation) accordingly.
+
+### 1. Overview
+
+Our OCR system uses an **encoder-decoder architecture** where:
+- The **encoder** is based on a Vision Transformer (ViT) pre-trained using methods inspired by **DeiT/BEiT**.
+- The **decoder** is adapted from the pre-trained RoBERTa model and streamlined to output a single digit token.
+- The model is trained end-to-end on the EMNIST dataset, which contains isolated handwritten digits.
+
+### 2. Dataset
+
+#### EMNIST Details
+- **Dataset:** Extended MNIST (EMNIST) Digits
+- **Content:** Handwritten digits (0–9)
+- **Splits:**
+  - **Training set:** ~280,000 images
+  - **Test set:** ~40,000 images
+
+#### Preprocessing Steps:
+- **Resizing:** Images are resized to **32×32 pixels** (or adjusted to match the ViT patch size).
+- **Normalization:** Pixel intensities are scaled to the range **[0, 1]**.
+- **Binarization (optional):** Enhances contrast for improved digit delineation.
 - **Augmentation:**
   - Random rotations (e.g., ±10°)
   - Gaussian blurring
   - Affine transformations (dilation/erosion)
   - Slight scaling adjustments
 
----
-
 ### 3. Model Architecture
 
-#### 3.1 Encoder Initialization
-Inspired by TrOCR, the encoder leverages ViT models pre-trained with techniques from **DeiT** and **BEiT**:
-- **DeiT-based Initialization:**
-  - Pre-trained on ImageNet for robust image feature extraction.
-  - Incorporates a **distilled token** to capture class-specific representations.
-- **BEiT-based Initialization:**
-  - Uses **Masked Image Modeling** by masking random patches and recovering them.
-  - Converts input images into sequences of patch embeddings.
+Our OCR model is built upon a transformer-based encoder-decoder framework, inspired by the TrOCR paradigm. Below, we describe each component in detail:
 
-**Our Setup:**
-- **Patch Tokenization:** The 32×32 image is divided into fixed-size patches (e.g., 4×4 patches).
-- **Transformer Layers:** 12 layers, 8 attention heads, with a hidden dimension of 768.
-- **Positional Embeddings:** Added to each patch embedding to preserve spatial relationships.
+#### 3.1 Encoder: Vision Transformer (ViT)
+- **Patch Tokenization:**  
+  - The input 32×32 image is divided into fixed-size patches (e.g., 4×4).  
+  - Each patch is flattened (from 2D to 1D) and linearly projected into a feature embedding.
+- **Positional Embeddings:**  
+  - Positional embeddings are added to each patch embedding to preserve spatial relationships, effectively treating each patch as a token in a sentence.
+- **Transformer Layers:**  
+  - The encoder consists of multiple layers (e.g., 12 layers with 8 attention heads and a hidden dimension of 768).  
+  - Each layer includes:
+    - **Multi-Head Self-Attention:** Enables each patch token to attend to every other patch.
+    - **Fully Connected Feed-Forward Network:** Processes the attention output.
+    - **Layer Normalization and Residual Connections:** Ensure stable gradient flow during backpropagation.
+- **Inspiration from TrOCR:**  
+  - This process is analogous to the TrOCR encoder, where image patches are treated as tokens and processed with transformer layers that combine linear projections with positional embeddings.
 
-#### 3.2 Decoder Initialization
-The decoder is adapted from pre-trained language models:
-- **RoBERTa / MiniLM:** Originally designed for language tasks; repurposed here for digit recognition.
-- **Modifications for Single-Digit Recognition:**
-  - Manually insert encoder-decoder attention layers to align visual and token embeddings.
-  - Map pre-trained weights to the decoder’s self-attention layers.
-  - Randomly initialize additional parameters (e.g., cross-attention layers) not present in the original model.
-  - The decoder is streamlined to output a single digit token, along with special tokens `[BOS]` and `[EOS]`.
+#### 3.2 Decoder: RoBERTa-based Transformer
+- **Input from Encoder:**  
+  - The decoder receives the visual embeddings produced by the ViT encoder.
+- **Architecture and Modifications:**  
+  - Adapted from the pre-trained RoBERTa model, originally built for language tasks.  
+  - The decoder is modified to include **encoder-decoder attention modules** inserted between its self-attention and feed-forward layers:
+    - **Encoder-Decoder Attention:**  
+      - **Queries:** Derived from the decoder input (starting with the special `[BOS]` token).  
+      - **Keys and Values:** Sourced from the encoder’s output embeddings.
+  - **Output Projection:**  
+    - The final decoder embeddings are projected from the model dimension (768) to the vocabulary dimension.  
+    - For our single-digit recognition task, the vocabulary consists of digits (0–9) plus special tokens (`[BOS]` and `[EOS]`).
+  - **Prediction:**  
+    - A softmax function computes probabilities over this reduced vocabulary, and during inference, beam search is used to select the best digit token.
 
-**Decoder Details:**
-- **Tokenization:** Uses a Byte Pair Encoding (BPE) or SentencePiece tokenizer with a vocabulary limited to digits (0–9) and special tokens.
-- **Special Tokens:**
-  - `[BOS]`: Indicates the beginning of the sequence.
-  - `[EOS]`: Indicates the end of the sequence.
-- **Architecture:** A simplified stack of Transformer layers tailored for a single-token output.
+#### 3.3 TrOCR Working Details in Our Model
+
+One of the earliest studies to leverage both pre-trained image and text transformers simultaneously, the transformer-based OCR (TrOCR) approach, serves as inspiration for our architecture:
+- **ViTransformer as Encoder:**  
+  - Each image patch (from the NxN grid) is treated as a token after flattening and linear projection.
+  - Positional embeddings and transformer layers (with multi-head self-attention, feed-forward networks, layer normalization, and residual connections) work together to build robust feature representations.
+- **Roberta as Decoder:**  
+  - The decoder processes the visual embeddings, incorporating encoder-decoder attention to integrate context from the image.
+  - Final output tokens are generated by projecting the decoder embeddings to the digit vocabulary and applying beam search to choose the most probable digit.
+- **Unified Flow:**  
+  - The entire system is end-to-end trainable, with gradient flow preserved by residual connections and normalization layers in both encoder and decoder.
 
 ---
 
@@ -98,15 +141,15 @@ The decoder is adapted from pre-trained language models:
 
 Following the TrOCR approach, our pipeline for single-digit recognition consists of:
 
-1. **Input Processing:**
+1. **Input Processing:**  
    - The EMNIST image is fed into the encoder, which converts it into a sequence of visual embeddings.
-
-2. **Sequence Generation:**
-   - During training, the decoder receives the ground-truth digit token prepended with `[BOS]`.
+   
+2. **Sequence Generation:**  
+   - During training, the decoder receives the ground-truth digit token prepended with `[BOS]`.  
    - The model predicts a single digit token, and the prediction is compared against the ground truth (with `[EOS]` appended) using **cross-entropy loss**.
-
-3. **Inference:**
-   - The decoder starts with `[BOS]` and outputs a single digit token.
+   
+3. **Inference:**  
+   - The decoder starts with `[BOS]` and outputs a single digit token.  
    - The process stops immediately after the first token is generated, ensuring that each cell is recognized as a single digit.
 
 ---
@@ -141,7 +184,8 @@ Aligned with the TrOCR methodology, various augmentation strategies are employed
   - **Gaussian Blur:** Imitates scanning or imaging artifacts.
   - **Affine Transformations:** Dilation and erosion mimic variations in ink flow.
   - **Scaling:** Minor adjustments to represent different writing sizes.
-- **Selection:** Each image is randomly subjected to one or more augmentations during training.
+- **Selection:**  
+  Each image is randomly subjected to one or more augmentations during training.
 
 ---
 
@@ -159,7 +203,22 @@ Aligned with the TrOCR methodology, various augmentation strategies are employed
 
 ## 8. Conclusion
 
-This document details the design of a TrOCR-inspired model tailored for single-digit recognition using the EMNIST dataset. By integrating a ViT-based encoder with a streamlined transformer decoder and employing advanced data augmentation strategies, the model achieves robust recognition performance. This forms the backbone of the Neuro Sudoku application, enabling efficient, real-time Sudoku puzzle solving.
+This document details the design of a TrOCR-inspired model tailored for single-digit recognition using the EMNIST dataset. By integrating a ViT-based encoder with a streamlined RoBERTa decoder—and employing advanced data augmentation strategies—the model achieves robust recognition performance. This forms the backbone of the Neuro Sudoku application, enabling efficient, real-time Sudoku puzzle solving.
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
