@@ -2,18 +2,6 @@
 
 A full-stack web application for real-time Sudoku solving. Users upload an image of a Sudoku puzzle, the application extracts and recognizes the digits using a Vision Transformer (ViT) model trained on the extended EMNIST dataset, and then solves the puzzle with a backtracking algorithm. The project leverages OpenCV for image preprocessing, FastAPI for the backend, and Next.js for the frontend.
 
-## Table of Contents
-
-- [About](#about)
-- [Model Training and Architecture](#model-training-and-architecture)
-- [Image Processing Workflow](#image-processing-workflow)
-- [Sudoku Solving Algorithm](#sudoku-solving-algorithm)
-- [Installation and Setup](#installation-and-setup)
-  - [Conda Environment](#conda-environment)
-  - [Frontend Setup](#frontend-setup)
-  - [Backend Setup](#backend-setup)
-- [Usage](#usage)
-
 ## About
 
 This application offers a seamless, AI-driven solution for solving Sudoku puzzles:
@@ -21,6 +9,22 @@ This application offers a seamless, AI-driven solution for solving Sudoku puzzle
 - **Digit Recognition:** Uses a state-of-the-art Vision Transformer model (ViT) to recognize individual digits.
 - **Automated Puzzle Solving:** Employs a backtracking algorithm to solve the recognized Sudoku puzzle.
 - **Full-Stack Implementation:** FastAPI for the backend API and Next.js for the frontend interface.
+
+## Screenshots
+![image](https://github.com/user-attachments/assets/1e672b5b-b870-46a3-aaa6-3453b683cb5d)
+
+![image](https://github.com/user-attachments/assets/2411a4a4-25cd-4ccf-8c0d-62ba22c2e695)
+
+![image](https://github.com/user-attachments/assets/95a288c0-50f7-472f-aa10-70bac1ca8648)
+
+![image](https://github.com/user-attachments/assets/34d0c444-cfc6-464e-8a1e-124136eca2dd)
+
+![image](https://github.com/user-attachments/assets/6eea3108-74ab-4580-ac34-f17002bed327)
+
+## Demo
+
+[Demo.webm](https://github.com/user-attachments/assets/0fce08a7-9713-4864-aa4d-f88dbaf0d26e)
+
 
 # Model Training and Architecture: TrOCR-based Replica on EMNIST
 
