@@ -1,19 +1,14 @@
-import random
 from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from pydantic import BaseModel
 from api.views import extract_sudoku_grid
-import cv2
-from .routers import workouts, routines  
+import cv2 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from .database import Base, engine
 
 app = FastAPI()
-
-Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,11 +21,6 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "OK"}
-
-@app.get("/frontend-message")
-def frontend_message():
-    return {"message": "Hello from the backend!"}
-
 
 class SudokuRequest(BaseModel):
     puzzle: List[List[int]]
@@ -123,7 +113,3 @@ async def solve_sudoku_api(request: SudokuRequest):
         return {"solution": puzzle}
     else:
         raise HTTPException(status_code=400, detail="No solution exists")
-
-app.include_router(workouts.router)
-app.include_router(routines.router)
-
