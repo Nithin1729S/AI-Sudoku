@@ -70,23 +70,18 @@ def solve_sudoku(board):
 async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
     if not image:
         raise HTTPException(status_code=400, detail="No image uploaded")
-
     try:
-        # Read the uploaded image bytes
+        # Read the image bytes from the uploaded file
         contents = await image.read()
-        # Convert the bytes data to a NumPy array
+        # Convert bytes data to a NumPy array and decode it (as grayscale)
         nparr = np.frombuffer(contents, np.uint8)
-        # Decode the image (here we use color, our function will convert to grayscale if needed)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
         if img is None:
             raise HTTPException(status_code=400, detail="Could not decode image")
 
         # Call the sudoku extraction function
         sudoku_grid = extract_sudoku_grid(img)
-
-        # Return the recognized sudoku grid as JSON
         return JSONResponse(content={"numbers": sudoku_grid})
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
