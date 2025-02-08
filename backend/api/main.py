@@ -35,34 +35,58 @@ def frontend_message():
 class SudokuRequest(BaseModel):
     puzzle: List[List[int]]
 
-def is_valid(board, row, col, num):
-    """Check if placing num at (row, col) is valid in Sudoku."""
+
+##############################################
+# Backtracking Sudoku Solver Functions
+##############################################
+def find_empty(board: List[List[int]]):
+    """
+    Find an empty cell (denoted by 0) in the board.
+    Returns a tuple (row, col) or None if no empty cell is found.
+    """
     for i in range(9):
-        if board[row][i] == num or board[i][col] == num:
-            return False
-    start_row, start_col = (row // 3) * 3, (col // 3) * 3
-    for i in range(3):
-        for j in range(3):
-            if board[start_row + i][start_col + j] == num:
+        for j in range(9):
+            if board[i][j] == 0:
+                return (i, j)
+    return None
+
+def is_valid(board: List[List[int]], row: int, col: int, num: int) -> bool:
+    """
+    Check if placing 'num' in board[row][col] is valid according to Sudoku rules.
+    """
+    # Check row and column
+    if any(board[row][x] == num for x in range(9)):
+        return False
+    if any(board[y][col] == num for y in range(9)):
+        return False
+
+    # Check the 3x3 sub-grid
+    start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+    for i in range(start_row, start_row + 3):
+        for j in range(start_col, start_col + 3):
+            if board[i][j] == num:
                 return False
     return True
 
-def solve_sudoku(board):
-    """Solve the Sudoku using backtracking."""
-    for row in range(9):
-        for col in range(9):
-            if board[row][col] == 0:  # Find an empty spot
-                for num in range(1, 10):
-                    if is_valid(board, row, col, num):
-                        board[row][col] = num
-                        if solve_sudoku(board):  # Recur to solve further
-                            return True
-                        board[row][col] = 0  # Undo move if it doesn't work
-                return False  # No valid number found
-    return True  # Puzzle solved
+def solve_sudoku(board: List[List[int]]) -> bool:
+    """
+    Solves the Sudoku board in-place using backtracking.
+    Returns True if a solution exists, False otherwise.
+    """
+    empty = find_empty(board)
+    if not empty:
+        # No empty cell left; solution found
+        return True
+    row, col = empty
 
+    for num in range(1, 10):
+        if is_valid(board, row, col, num):
+            board[row][col] = num
+            if solve_sudoku(board):
+                return True
+            board[row][col] = 0  # Backtrack
 
-
+    return False
 
 
 
@@ -86,22 +110,17 @@ async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-
-
-
-
 @app.post("/api/solve")
 async def solve_sudoku_api(request: SudokuRequest):
     puzzle = request.puzzle
 
-    # if len(puzzle) != 9 or any(len(row) != 9 for row in puzzle):
-    #     raise HTTPException(status_code=400, detail="Invalid Sudoku grid size")
+    # Basic check for grid size
+    if len(puzzle) != 9 or any(len(row) != 9 for row in puzzle):
+        raise HTTPException(status_code=400, detail="Invalid Sudoku grid size")
 
-    # if solve_sudoku(puzzle):
-    #     return {"solution": puzzle}
-    sudoku_grid = [[random.choice([1, random.randint(1, 9)]) for _ in range(9)] for _ in range(9)]
-    if (1):
-        return {"solution": sudoku_grid}
+    # Attempt to solve the puzzle in place
+    if solve_sudoku(puzzle):
+        return {"solution": puzzle}
     else:
         raise HTTPException(status_code=400, detail="No solution exists")
 
