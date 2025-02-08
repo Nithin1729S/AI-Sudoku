@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Sudoku Solver',
+  title: 'NeuroSudoku',
   description: 'Upload and solve Sudoku puzzles with AI',
   icons: [
     {
