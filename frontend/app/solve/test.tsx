@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, RefreshCw, Check, X, Loader2 } from "lucide-react";
-import Image from "next/image";
 import SudokuBoard from "@/components/sudoku-board";
 import ImageUpload from "@/components/image-upload";
 
@@ -23,7 +22,7 @@ export default function SolvePage() {
     try {
       setIsRecognizing(true);
       // Assume endpoint /api/recognize for digit recognition
-      const response = await fetch("http://localhost:8000/api/recognize", {
+      const response = await fetch("/api/recognize", {
         method: "POST",
         body: formData,
       });
@@ -33,7 +32,7 @@ export default function SolvePage() {
       setStep("verify");
     } catch (error) {
       console.error("Error recognizing digits:", error);
-    }finally {
+    } finally {
       setIsRecognizing(false);
     }
   };
@@ -47,7 +46,7 @@ export default function SolvePage() {
     try {
       setIsSolving(true);
       // Assume endpoint /api/solve for solving the Sudoku
-      const response = await fetch("http://localhost:8000/api/solve", {
+      const response = await fetch("/api/solve", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,7 +58,7 @@ export default function SolvePage() {
       setStep("solution");
     } catch (error) {
       console.error("Error solving Sudoku:", error);
-    }finally {
+    } finally {
       setIsSolving(false);
     }
   };

@@ -2,8 +2,10 @@ import random
 from typing import List
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
 from pydantic import BaseModel
-
+from api.views import extract_sudoku_grid
+import cv2
 from .routers import workouts, routines  
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
@@ -59,26 +61,40 @@ def solve_sudoku(board):
                 return False  # No valid number found
     return True  # Puzzle solved
 
+
+
+
+
+
 @app.post("/api/recognize")
 async def recognize_digits(image: UploadFile = File(..., media_type="image/*")):
     if not image:
         raise HTTPException(status_code=400, detail="No image uploaded")
 
     try:
-        # Read the image for debugging
-        content = await image.read()
-        print(f"Received image: {image.filename}, Size: {len(content)} bytes")
+        # Read the uploaded image bytes
+        contents = await image.read()
+        # Convert the bytes data to a NumPy array
+        nparr = np.frombuffer(contents, np.uint8)
+        # Decode the image (here we use color, our function will convert to grayscale if needed)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise HTTPException(status_code=400, detail="Could not decode image")
 
-        # Mocked Sudoku recognition: Generate a random partially filled 9x9 grid
-        sudoku_grid = [[random.choice([0, random.randint(1, 9)]) for _ in range(9)] for _ in range(9)]
-        print("Sudoku Grid:")
-        for row in sudoku_grid:
-            print(row)
+        # Call the sudoku extraction function
+        sudoku_grid = extract_sudoku_grid(img)
+
+        # Return the recognized sudoku grid as JSON
         return JSONResponse(content={"numbers": sudoku_grid})
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+
+
+
+
+
 @app.post("/api/solve")
 async def solve_sudoku_api(request: SudokuRequest):
     puzzle = request.puzzle
