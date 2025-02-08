@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, RefreshCw, Check, X, Loader2 } from "lucide-react";
+import { RefreshCw, Check, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import SudokuBoard from "@/components/sudoku-board";
 import ImageUpload from "@/components/image-upload";
